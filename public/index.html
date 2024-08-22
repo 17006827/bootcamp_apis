@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootcamp Widgets</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="widget" x-data="{ sentence: '', stats: {} }">
+        <h3>Words Widget</h3>
+        <input type="text" x-model="sentence" placeholder="Enter a sentence" />
+        <button @click="fetchStats()">Analyze Sentence</button>
+        <div x-show="Object.keys(stats).length > 0">
+            <p>Longest Word: <span x-text="stats.longestWord"></span></p>
+            <p>Shortest Word: <span x-text="stats.shortestWord"></span></p>
+            <p>Sum: <span x-text="stats.sum"></span></p>
+        </div>
+    </div>
+
+    <div class="widget" x-data="{ bill: '', total: 0, callPrice: 2.75, smsPrice: 0.65, type: '', price: 0 }">
+        <h3>Phone Bill Widget</h3>
+        <input type="text" x-model="bill" placeholder="Enter bill string" />
+        <button @click="calculateTotal()">Calculate Total</button>
+        <div x-show="total > 0">
+            <p>Total: <span x-text="total"></span></p>
+        </div>
+        <h3>Update Prices</h3>
+        <input type="text" x-model="type" placeholder="Type (call/sms)" />
+        <input type="number" x-model="price" placeholder="New Price" />
+        <button @click="updatePrice()">Update Price</button>
+        <p>Current Call Price: <span x-text="callPrice"></span></p>
+        <p>Current SMS Price: <span x-text="smsPrice"></span></p>
+    </div>
+
+    <div class="widget" x-data="{ usage: '', available: 0, result: 0 }">
+        <h3>Enough Airtime Widget</h3>
+        <input type="text" x-model="usage" placeholder="Enter usage string" />
+        <input type="number" x-model="available" placeholder="Available airtime" />
+        <button @click="checkAirtime()">Check Airtime</button>
+        <div x-show="result !== 0">
+            <p>Remaining Airtime: <span x-text="result"></span></p>
+        </div>
+    </div>
+
+    <script>
+       function fetchStats() {
+    if (this.sentence) {
+        fetch(`/api/word_game?sentence=${this.sentence}`)
+            .then(response => response.json())
+            .then(data => this.stats = data);
+    } else {
+        alert('Please enter a sentence');
+    }
+}
+
+
+        function calculateTotal() {
+            fetch('/api/phonebill/total', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bill: this.bill })
+            })
+            .then(response => response.json())
+            .then(data => this.total = data.total);
+        }
+
+        function updatePrice() {
+            fetch('/api/phonebill/price', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: this.type, price: this.price })
+            })
+            .then(response => response.json())
+            .then(() => this.fetchPrices());
+        }
+
+        function fetchPrices() {
+            fetch('/api/phonebill/prices')
+                .then(response => response.json())
+                .then(data => {
+                    this.callPrice = data.call;
+                    this.smsPrice = data.sms;
+                });
+        }
+
+        function checkAirtime() {
+            fetch('/api/enough', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usage: this.usage, available: this.available })
+            })
+            .then(response => response.json())
+            .then(data => this.result = data.result);
+        }
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('fetchStats', fetchStats);
+            Alpine.data('calculateTotal', calculateTotal);
+            Alpine.data('updatePrice', updatePrice);
+            Alpine.data('fetchPrices', fetchPrices);
+            Alpine.data('checkAirtime', checkAirtime);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"></script>
+</body>
+</html>
+<!-- http://localhost:3000/index.html -->

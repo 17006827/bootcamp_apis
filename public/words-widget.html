@@ -1,0 +1,19 @@
+<div x-data="{ sentence: '', stats: {} }">
+    <input type="text" x-model="sentence" placeholder="Enter a sentence" />
+    <button @click="fetchStats()">Analyze Sentence</button>
+
+    <div x-show="Object.keys(stats).length > 0">
+        <p>Longest Word: <span x-text="stats.longestWord"></span></p>
+        <p>Shortest Word: <span x-text="stats.shortestWord"></span></p>
+        <p>Sum: <span x-text="stats.sum"></span></p>
+    </div>
+</div>
+
+<script>
+function fetchStats() {
+    fetch(`/api/word_game?sentence=${this.sentence}`)
+        .then(response => response.json())
+        .then(data => this.stats = data);
+}
+</script>
+<!-- http://localhost:3000/words-widget.html -->

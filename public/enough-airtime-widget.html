@@ -1,0 +1,22 @@
+<div x-data="{ usage: '', available: 0, result: 0 }">
+    <input type="text" x-model="usage" placeholder="Enter usage string" />
+    <input type="number" x-model="available" placeholder="Available airtime" />
+    <button @click="checkAirtime()">Check Airtime</button>
+
+    <div x-show="result !== 0">
+        <p>Remaining Airtime: <span x-text="result"></span></p>
+    </div>
+</div>
+
+<script>
+function checkAirtime() {
+    fetch('/api/enough', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usage: this.usage, available: this.available })
+    })
+    .then(response => response.json())
+    .then(data => this.result = data.result);
+}
+</script>
+<!-- http://localhost:3000/enough-airtime-widget.html -->

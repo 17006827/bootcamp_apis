@@ -1,0 +1,54 @@
+<div x-data="{ bill: '', total: 0, callPrice: 2.75, smsPrice: 0.65, type: '', price: 0 }">
+    <input type="text" x-model="bill" placeholder="Enter bill string" />
+    <button @click="calculateTotal()">Calculate Total</button>
+
+    <div x-show="total > 0">
+        <p>Total: <span x-text="total"></span></p>
+    </div>
+
+    <h3>Update Prices</h3>
+    <input type="text" x-model="type" placeholder="Type (call/sms)" />
+    <input type="number" x-model="price" placeholder="New Price" />
+    <button @click="updatePrice()">Update Price</button>
+
+    <p>Current Call Price: <span x-text="callPrice"></span></p>
+    <p>Current SMS Price: <span x-text="smsPrice"></span></p>
+</div>
+
+<script>
+function calculateTotal() {
+    fetch('/api/phonebill/total', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bill: this.bill })
+    })
+    .then(response => response.json())
+    .then(data => this.total = data.total);
+}
+
+function updatePrice() {
+    fetch('/api/phonebill/price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: this.type, price: this.price })
+    })
+    .then(response => response.json())
+    .then(() => this.fetchPrices());
+}
+
+function fetchPrices() {
+    fetch('/api/phonebill/prices')
+        .then(response => response.json())
+        .then(data => {
+            this.callPrice = data.call;
+            this.smsPrice = data.sms;
+        });
+}
+
+document.addEventListener('alpine:init', () => {
+    Alpine.data('calculateTotal', calculateTotal);
+    Alpine.data('updatePrice', updatePrice);
+    Alpine.data('fetchPrices', fetchPrices);
+});
+</script>
+<!-- http://localhost:3000/phone-bill-widget.html -->
